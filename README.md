@@ -4,7 +4,7 @@ Este projeto é uma demonstração interativa de um **Algoritmo Genético (AG)**
 
 O objetivo é encontrar o conjunto de rotas que minimiza a distância total percorrida por uma frota de veículos para atender a uma série de clientes, respeitando a capacidade máxima de carga de cada veículo.
 
-## 🚀 Tecnologias
+## Tecnologias
 
 A aplicação utiliza uma arquitetura moderna para garantir performance e visualização em tempo real:
 
@@ -13,7 +13,7 @@ A aplicação utiliza uma arquitetura moderna para garantir performance e visual
 - **Streaming:** [Server-Sent Events (SSE)](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) para transmissão em tempo real das gerações do algoritmo.
 - **Estilo:** CSS Moderno com Glassmorphism e Dark Mode.
 
-## 🏗️ Arquitetura
+## Arquitetura
 
 O algoritmo genético é executado no **servidor (Express)**. Isso permite que o processamento pesado seja feito fora da thread principal do navegador. Cada nova geração "vencedora" é enviada ao frontend via SSE, permitindo que o usuário acompanhe a convergência do algoritmo ao vivo.
 
@@ -24,7 +24,7 @@ O algoritmo genético é executado no **servidor (Express)**. Isso permite que o
 - **Elitismo:** Preservação dos melhores indivíduos de cada geração.
 - **Mutação:** Swap aleatório entre genes.
 
-## 📦 Como Executar
+## Como Executar
 
 ### Pré-requisitos:
 - [Node.js](https://nodejs.org/) (v16 ou superior recomendado).
