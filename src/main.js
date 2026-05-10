@@ -1,6 +1,14 @@
 // src/main.js — Controlador principal do Simulador AG/PRVC
-// PONTO DE ATENÇÃO (banca): este arquivo implementa o sistema de
-// "Playback Buffer" que separa o recebimento SSE da renderização.
+//
+// ╔══════════════════════════════════════════════════════════╗
+// ║  Commit: main: sistema de playback buffer com SSE        ║
+// ║  Separa o recebimento SSE da renderização visual.        ║
+// ║  O SSE preenche historyBuffer[]; o loop de playback lê   ║
+// ║  esse buffer de forma completamente independente.        ║
+// ╚══════════════════════════════════════════════════════════╝
+//
+// APRESENTAÇÃO (banca): mostrar o array historyBuffer a crescer
+// na consola enquanto o GA corre — prova que o buffer funciona.
 import './style.css';
 import { drawMap, drawChart, renderRouteDetails, resizeCanvas } from './render.js';
 
@@ -32,15 +40,18 @@ let params     = {};
 let histBest   = [], histAvg = [];
 
 // Velocidade em ms por frame para cada nível do slider
+// APRESENTAÇÃO (banca): 0.25x = muito lento (bom para explicar cada geração)
+//                       1x   = ritmo normal de demonstração
+//                       2x   = rápido para mostrar convergência geral
 const SPEED_MAP = {
-  1: 900,   // Muito Lento
-  2: 400,   // Lento
-  3: 150,   // Normal
-  4: 60,    // Rápido
-  5: 20,    // Muito Rápido
+  1: 900,   // 0.25x — explicar gene a gene à banca
+  2: 400,   // 0.5x  — ritmo lento mas fluido
+  3: 150,   // 1x    — velocidade de referência
+  4: 60,    // 1.5x  — observar convergência
+  5: 20,    // 2x    — varredura rápida de todas as gerações
 };
 const SPEED_LABEL = {
-  1: 'Muito Lento', 2: 'Lento', 3: 'Normal', 4: 'Rápido', 5: 'Muito Rápido',
+  1: '0.25x', 2: '0.5x', 3: '1x', 4: '1.5x', 5: '2x',
 };
 
 // ── Refs DOM ──────────────────────────────────────────────────
@@ -94,9 +105,12 @@ function resizeAll() {
 }
 
 // ══════════════════════════════════════════════════════════════
+//  Commit: main: sistema de playback buffer com SSE
 //  SISTEMA DE PLAYBACK
-//  PONTO DE ATENÇÃO (banca): play/pause, step e scrubber
-//  controlam o currentFrame independentemente do SSE.
+//  APRESENTAÇÃO (banca): play/pause, step e scrubber
+//  controlam currentFrame independentemente do SSE.
+//  Mesmo com a simulação pausada, o loop Marching Ants
+//  continua a correr via requestAnimationFrame (ver antLoop).
 // ══════════════════════════════════════════════════════════════
 
 /** Renderiza o frame no índice `idx` do historyBuffer */
@@ -184,11 +198,17 @@ function seekToFrame(idx) {
 }
 
 // ── Marching Ants loop (RAF independente do playback) ──────────
-// PONTO DE ATENÇÃO (banca): este loop roda 60fps e só atualiza
-// o dashOffset; o renderFrame usa esse valor para animar as linhas.
+// Commit: render: marching ants, warehouse e glow nas rotas
+//
+// APRESENTAÇÃO (banca): este loop corre a 60 fps SEMPRE —
+// mesmo quando a simulação está em pausa. Só actualiza dashOffset.
+// O renderFrame (chamado pelo playback) usa esse valor para
+// desenhar as linhas animadas. É a separação de concerns:
+//   antLoop  → anima as formigas (RAF, 60fps)
+//   advanceFrame → avança gerações (setTimeout, velocidade variável)
 function antLoop() {
   dashOffset = (dashOffset + 0.5) % 60;
-  // Re-renderiza mapa com novo offset se há frame ativo
+  // Re-renderiza mapa com novo offset se existe frame activo
   if (historyBuffer.length && clients) {
     const frame = historyBuffer[currentFrame];
     if (frame) {
@@ -230,9 +250,13 @@ function updateStats(frame, evolved) {
 }
 
 // ══════════════════════════════════════════════════════════════
-//  HUD GENÉTICO (Tarefa 2)
-//  PONTO DE ATENÇÃO (banca): o cromossomo é um array de índices.
-//  O "|" separa as rotas onde um veículo estourou a capacidade.
+//  Commit: frontend: novo index.html com playback e HUD genetico
+//  HUD GENÉTICO
+//  APRESENTAÇÃO (banca): o cromossomo é um array de índices de
+//  clientes (permutação). A função decode() no servidor percorre
+//  esse array e insere um "|" sempre que adicionar o próximo
+//  cliente excederia a capacidade do veículo (ex: cap = 50).
+//  Permite mostrar à banca como o gene codifica múltiplas rotas.
 // ══════════════════════════════════════════════════════════════
 function updateHUD(frame, evolved) {
   const hudEl    = document.getElementById('hudGenetic');
@@ -363,9 +387,12 @@ function resetUI() {
 }
 
 // ══════════════════════════════════════════════════════════════
+//  Commit: main: sistema de playback buffer com SSE
 //  INICIAR RUN — POST + SSE → preenchimento do historyBuffer
-//  PONTO DE ATENÇÃO (banca): o SSE preenche o buffer em background;
-//  o playback inicia automaticamente conforme frames chegam.
+//  APRESENTAÇÃO (banca): o fluxo tem duas fases independentes:
+//    Fase 1 (SSE)     → preenche historyBuffer[] em background
+//    Fase 2 (Playback)→ lê historyBuffer[] ao ritmo do slider
+//  O playback arranca automaticamente após 3 frames no buffer.
 // ══════════════════════════════════════════════════════════════
 async function startRun() {
   if (running) return;
@@ -477,7 +504,8 @@ btnStepFwd.addEventListener('click', stepForward);
 btnStepBack.addEventListener('click', stepBackward);
 
 // Atalhos de teclado
-// PONTO DE ATENÇÃO (banca): Espaço = play/pause, ← → = step
+// APRESENTAÇÃO (banca): Espaço = play/pause | ← → = step frame a frame
+// Ideal para apresentar à banca geração a geração sem tocar no rato.
 window.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT') return;
   if (e.code === 'Space')       { e.preventDefault(); btnPlayPause.click(); }

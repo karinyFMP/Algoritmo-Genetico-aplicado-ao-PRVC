@@ -1,6 +1,10 @@
 // src/render.js — Módulo de renderização Canvas (Simulador Didático AG/PRVC)
-// PONTO DE ATENÇÃO (banca): toda a visualização do mapa acontece aqui.
-// Marching Ants + Glow Neon + Warehouse + Clientes com demanda visual.
+//
+// ╔════════════════════════════════════════════════════════╗
+// ║  Commit: render: marching ants, warehouse e glow nas rotas ║
+// ║  Substitui linhas estáticas por animação "Marching Ants",  ║
+// ║  depósito com ícone de armazem e glow neon nas rotas.      ║
+// ╚════════════════════════════════════════════════════════╝
 
 // ── Paleta de rotas (neon) ──────────────────────────────────────
 export const ROUTE_COLORS = [
@@ -25,9 +29,13 @@ function toXY(nx, ny, W, H, pad = 50) {
 }
 
 // ════════════════════════════════════════════════════════════════
+//  Commit: render: marching ants, warehouse e glow nas rotas
 //  drawMap — renderização principal do mapa
-//  PONTO DE ATENÇÃO (banca): dashOffset é incrementado a cada frame
-//  para criar o efeito "Marching Ants" nas rotas (ilusão de caminhões).
+//
+//  APRESENTAÇÃO (banca): o parâmetro dashOffset é incrementado
+//  em antLoop() (main.js) a 60 fps e passado aqui. O ctx.setLineDash
+//  com lineDashOffset negativo faz as segmentos "moverem-se" ao longo
+//  da rota — efeito "Marching Ants" que simula os caminhões em trânsito.
 // ════════════════════════════════════════════════════════════════
 export function drawMap(canvas, solution, clients, depot, dashOffset = 0) {
   const ctx = canvas.getContext('2d');
@@ -272,9 +280,14 @@ function buildLegend(routes) {
 }
 
 // ════════════════════════════════════════════════════════════════
+//  Commit: render: marching ants, warehouse e glow nas rotas
 //  drawChart — Gráfico de convergência da aptidão
-//  PONTO DE ATENÇÃO (banca): a linha verde descendo indica que
-//  o AG está encontrando soluções cada vez melhores.
+//
+//  APRESENTAÇÃO (banca): a linha verde a descer prova que o AG
+//  está a convergir para soluções cada vez melhores. O marcador
+//  âmbar vertical mostra a geração actualmente exibida no canvas.
+//  Arrastar a timeline para trás move o marcador — demonstra o
+//  playback em directo à banca.
 // ════════════════════════════════════════════════════════════════
 export function drawChart(canvas, histBest, histAvg, currentFrame = -1) {
   const ctx = canvas.getContext('2d');
@@ -381,9 +394,11 @@ export function drawChart(canvas, histBest, histAvg, currentFrame = -1) {
 }
 
 // ════════════════════════════════════════════════════════════════
+//  Commit: frontend: novo index.html com playback e HUD genetico
 //  renderRouteDetails — detalhe das rotas no painel lateral
-//  PONTO DE ATENÇÃO (banca): exibe carga de cada veículo e
-//  barra de capacidade utilizada por rota.
+//  APRESENTAÇÃO (banca): a barra de carga por rota mostra
+//  visualmente a ocupação de cada veículo. Vermelho = >90% cheio.
+//  Esta informação é chave para avaliar a qualidade da solução.
 // ════════════════════════════════════════════════════════════════
 export function renderRouteDetails(routes, clients, depot, cap) {
   const list = document.getElementById('routesList');
