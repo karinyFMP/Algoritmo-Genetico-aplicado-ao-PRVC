@@ -3,16 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AG no PRVC — Algoritmo Genético para Roteamento de Veículos</title>
-  <meta name="description" content="Demonstração interativa de Algoritmo Genético aplicado ao PRVC. GA roda no servidor Express e transmite resultados em tempo real via SSE." />
+  <title>AG no PRVC — Simulador de Algoritmo Genético para Roteamento de Veículos</title>
+  <meta name="description" content="Simulador didático e cinematográfico de Algoritmo Genético aplicado ao PRVC. Playback passo a passo com HUD genético, Marching Ants e glassmorphism." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧬</text></svg>" />
+  <!-- src/style.css importado via main.js (Vite) -->
 </head>
 <body>
 
-  <!-- Hero Header -->
+  <!-- ══════════════════════════════════════════════════════════
+       HERO HEADER
+       PONTO DE ATENÇÃO (banca): Aqui aparece a stack tecnológica
+       usada no TCC: Vite + Express + SSE + Canvas API
+  ══════════════════════════════════════════════════════════ -->
   <header class="hero-header">
     <div class="hero-bg-grid"></div>
     <div class="hero-orbs">
@@ -24,30 +29,34 @@
       <div class="badge-pill">
         <span class="badge-dot"></span>
         Artigo do Jadson José Monteiro Oliveira · Unibalsas &nbsp;|&nbsp;
-        <span class="badge-tech">Vite + Express + SSE</span>
+        <span class="badge-tech">Vite + Express + SSE + Canvas API</span>
       </div>
       <h1>Algoritmo Genético <br/><span class="gradient-text">aplicado ao PRVC</span></h1>
       <p class="hero-subtitle">
-        O GA roda no servidor <strong>Express</strong> e transmite cada geração ao vivo via
-        <strong>Server-Sent Events</strong>. O <strong>Vite</strong> serve o frontend com HMR.
+        Simulador didático com <strong>playback passo a passo</strong>.
+        O GA roda no servidor <strong>Express</strong> e cada geração é
+        transmitida via <strong>Server-Sent Events</strong> e armazenada em buffer.
       </p>
       <div class="hero-tags">
         <span class="tag">🧬 Cromossomo por Permutação</span>
         <span class="tag">🔀 Cruzamento PMX</span>
         <span class="tag">⭐ Elitismo</span>
         <span class="tag">📡 SSE Streaming</span>
-        <span class="tag">⚡ Express API</span>
+        <span class="tag">⏯️ Playback Buffer</span>
+        <span class="tag">🐜 Marching Ants</span>
       </div>
     </div>
   </header>
 
-  <!-- Main App -->
+  <!-- ══════════════════════════════════════════════════════════
+       MAIN APP LAYOUT
+  ══════════════════════════════════════════════════════════ -->
   <main class="app-container">
 
-    <!-- Left Panel -->
+    <!-- ── Left Panel: Parâmetros e Stats ─────────────────── -->
     <aside class="left-panel">
 
-      <!-- Parameters -->
+      <!-- Parâmetros do AG -->
       <section class="card" id="params-card">
         <h2 class="card-title">
           <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
@@ -89,7 +98,8 @@
         </div>
       </section>
 
-      <!-- Live Stats -->
+      <!-- Estatísticas em Tempo Real -->
+      <!-- PONTO DE ATENÇÃO (banca): as estatísticas refletem o frame atual do playback -->
       <section class="card stats-card">
         <h2 class="card-title">
           <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
@@ -98,24 +108,32 @@
         <div class="stats-grid">
           <div class="stat-item">
             <span class="stat-label">Geração</span>
-            <span class="stat-value" id="statGen">—</span>
+            <span class="stat-value mono" id="statGen">—</span>
           </div>
           <div class="stat-item">
             <span class="stat-label">Melhor Dist.</span>
-            <span class="stat-value highlight" id="statBest">—</span>
+            <span class="stat-value highlight mono" id="statBest">—</span>
           </div>
           <div class="stat-item">
             <span class="stat-label">Dist. Média</span>
-            <span class="stat-value" id="statAvg">—</span>
+            <span class="stat-value mono" id="statAvg">—</span>
           </div>
           <div class="stat-item">
-            <span class="stat-label">Rotas</span>
-            <span class="stat-value" id="statRoutes">—</span>
+            <span class="stat-label">Veículos</span>
+            <span class="stat-value mono" id="statRoutes">—</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Cap. Média</span>
+            <span class="stat-value mono" id="statCapAvg">—</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Buffer</span>
+            <span class="stat-value mono" id="statBuffer">0 / 0</span>
           </div>
         </div>
         <div class="progress-bar-wrap">
           <div class="progress-bar-label">
-            <span>Progresso</span><span id="progressPct">0%</span>
+            <span>Progresso GA</span><span id="progressPct">0%</span>
           </div>
           <div class="progress-bar-track">
             <div class="progress-bar-fill" id="progressFill"></div>
@@ -125,7 +143,6 @@
           <span class="status-dot idle" id="statusDot"></span>
           <span id="statusText">Aguardando início</span>
         </div>
-        <!-- Server info -->
         <div class="server-info" id="serverInfo" style="display:none">
           <div class="server-info-row">
             <span class="server-label">Job ID</span>
@@ -138,7 +155,7 @@
         </div>
       </section>
 
-      <!-- How it works -->
+      <!-- Arquitetura do sistema -->
       <section class="card info-card">
         <h2 class="card-title">
           <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
@@ -168,23 +185,25 @@
           </div>
           <div class="info-step">
             <div class="step-num">2</div>
-            <div class="step-text"><strong>SSE Stream</strong> — o servidor transmite cada geração como evento JSON em tempo real.</div>
+            <div class="step-text"><strong>SSE → Buffer</strong> — gerações chegam via stream e são armazenadas em <code>historyBuffer[]</code>.</div>
           </div>
           <div class="info-step">
             <div class="step-num">3</div>
-            <div class="step-text"><strong>PMX + Elitismo</strong> — cruzamento Partially Mapped Crossover preserva rotas válidas sem repetições.</div>
+            <div class="step-text"><strong>Playback Loop</strong> — o slider de velocidade controla o <code>setTimeout</code> que avança o <code>currentFrame</code>.</div>
           </div>
           <div class="info-step">
             <div class="step-num">4</div>
-            <div class="step-text"><strong>Canvas API</strong> — frontend renderiza o mapa e o gráfico de aptidão a cada evento recebido.</div>
+            <div class="step-text"><strong>Marching Ants</strong> — <code>lineDashOffset</code> animado via <code>requestAnimationFrame</code> cria ilusão de caminhões em movimento.</div>
           </div>
         </div>
       </section>
     </aside>
 
-    <!-- Right Panel -->
+    <!-- ── Right Panel: Canvas + Playback + HUD ──────────── -->
     <div class="right-panel">
-      <!-- Map -->
+
+      <!-- Mapa principal com HUD flutuante sobreposto -->
+      <!-- PONTO DE ATENÇÃO (banca): o canvas é o coração da visualização -->
       <section class="card canvas-card">
         <div class="canvas-header">
           <h2 class="card-title">
@@ -193,12 +212,81 @@
           </h2>
           <div class="canvas-legend" id="routeLegend"></div>
         </div>
-        <div class="canvas-wrap">
-          <canvas id="mapCanvas" width="900" height="420"></canvas>
+
+        <!-- Área do canvas com HUDs flutuantes em glassmorphism -->
+        <div class="canvas-wrap" id="canvasWrap">
+          <canvas id="mapCanvas" width="900" height="440"></canvas>
+
+          <!-- ─── HUD GENÉTICO (Tarefa 2) ─────────────────────
+               PONTO DE ATENÇÃO (banca): Este painel mostra o
+               cromossomo do melhor indivíduo. O "|" separa rotas.
+               Flash verde = nova solução ótima encontrada!
+          ────────────────────────────────────────────────── -->
+          <div class="hud-glass hud-genetic" id="hudGenetic">
+            <div class="hud-title">
+              <span class="hud-icon">🧬</span>
+              HUD Genético — Cromossomo do Melhor Indivíduo
+            </div>
+            <div class="hud-chrom-wrap">
+              <div class="chrom-vector" id="chromVector">
+                <span class="chrom-placeholder">Aguardando dados...</span>
+              </div>
+            </div>
+            <div class="hud-meta">
+              <span id="hudGenLabel">Gen: —</span>
+              <span id="hudFitLabel">Dist: —</span>
+              <span id="hudEvolution" class="evo-badge hidden">✦ Evolução!</span>
+            </div>
+          </div>
+
+          <!-- ─── HUD MINI-STATUS (canto superior direito) ─── -->
+          <div class="hud-glass hud-mini-status" id="hudMiniStatus">
+            <span class="mini-status-gen" id="miniStatusGen">Gen 0 / 0</span>
+            <span class="mini-status-dot" id="miniStatusDot"></span>
+          </div>
+        </div>
+
+        <!-- ─── CONTROLES DE PLAYBACK (Tarefa 1) ───────────────
+             PONTO DE ATENÇÃO (banca): aqui o usuário pode pausar,
+             avançar/voltar frame a frame, ou arrastar a timeline.
+        ────────────────────────────────────────────────────── -->
+        <div class="playback-bar" id="playbackBar">
+
+          <!-- Timeline / Scrubber -->
+          <div class="timeline-wrap">
+            <span class="timeline-label mono" id="timelineStart">0</span>
+            <div class="timeline-track" id="timelineTrack">
+              <div class="timeline-progress" id="timelineProgress"></div>
+              <div class="timeline-thumb" id="timelineThumb"></div>
+            </div>
+            <span class="timeline-label mono" id="timelineEnd">0</span>
+          </div>
+
+          <!-- Botões de controle -->
+          <div class="playback-controls">
+            <button class="ctrl-btn" id="btnStepBack" title="Voltar 1 geração (←)">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+            </button>
+            <button class="ctrl-btn ctrl-play" id="btnPlayPause" title="Play/Pause (Espaço)">
+              <!-- ícone trocado por JS -->
+              <svg id="iconPlay" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              <svg id="iconPause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 19h4V5H6zm8 0h4V5h-4z"/></svg>
+            </button>
+            <button class="ctrl-btn" id="btnStepFwd" title="Avançar 1 geração (→)">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 6h-2v12h2zM6 18l8.5-6L6 6z"/></svg>
+            </button>
+
+            <!-- Slider de velocidade -->
+            <div class="speed-wrap">
+              <span class="speed-label">Vel.</span>
+              <input type="range" id="speedSlider" min="1" max="5" value="3" step="1" class="speed-slider" />
+              <span class="speed-value mono" id="speedLabel">Normal</span>
+            </div>
+          </div>
         </div>
       </section>
 
-      <!-- Chart -->
+      <!-- Gráfico de Aptidão -->
       <section class="card chart-card">
         <div class="canvas-header">
           <h2 class="card-title">
@@ -207,11 +295,11 @@
           </h2>
         </div>
         <div class="chart-wrap">
-          <canvas id="fitnessChart" width="900" height="220"></canvas>
+          <canvas id="fitnessChart" width="900" height="200"></canvas>
         </div>
       </section>
 
-      <!-- Route details -->
+      <!-- Detalhes das rotas -->
       <section class="card routes-card">
         <h2 class="card-title">
           <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
@@ -226,8 +314,8 @@
 
   <footer class="app-footer">
     <p>
-      Algoritmo Genético Aplicado ao PRVC.
-      &nbsp;|&nbsp; Stack: <strong>Vite · Express · Server-Sent Events</strong>
+      Algoritmo Genético Aplicado ao PRVC — TCC
+      &nbsp;|&nbsp; Stack: <strong>Vite · Express · Server-Sent Events · Canvas API</strong>
     </p>
   </footer>
 
