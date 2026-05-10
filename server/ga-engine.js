@@ -141,12 +141,13 @@ export async function runGA(params, problem, onGeneration) {
       globalBest = { ...best.f, chrom: [...best.c] };
     }
 
-    // Emit generation result
+    // Emit generation result — inclui cromossomo para o HUD genético no frontend
     await onGeneration({
       generation: gen,
       maxGen,
       bestDist: globalBest.dist,
       bestRoutes: globalBest.routes,
+      bestChrom: globalBest.chrom,   // vetor de permutação do melhor indivíduo
       avgDist,
       clients,
       depot,
