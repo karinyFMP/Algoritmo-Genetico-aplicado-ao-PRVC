@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AG no PRVC — Algoritmo Genético para Roteamento de Veículos</title>
+  <meta name="description" content="Demonstração interativa de Algoritmo Genético aplicado ao PRVC. GA roda no servidor Express e transmite resultados em tempo real via SSE." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧬</text></svg>" />
+</head>
+<body>
+
+  <!-- Hero Header -->
+  <header class="hero-header">
+    <div class="hero-bg-grid"></div>
+    <div class="hero-orbs">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+    <div class="hero-content">
+      <div class="badge-pill">
+        <span class="badge-dot"></span>
+        Artigo do Jadson José Monteiro Oliveira · Unibalsas &nbsp;|&nbsp;
+        <span class="badge-tech">Vite + Express + SSE</span>
+      </div>
+      <h1>Algoritmo Genético <br/><span class="gradient-text">aplicado ao PRVC</span></h1>
+      <p class="hero-subtitle">
+        O GA roda no servidor <strong>Express</strong> e transmite cada geração ao vivo via
+        <strong>Server-Sent Events</strong>. O <strong>Vite</strong> serve o frontend com HMR.
+      </p>
+      <div class="hero-tags">
+        <span class="tag">🧬 Cromossomo por Permutação</span>
+        <span class="tag">🔀 Cruzamento PMX</span>
+        <span class="tag">⭐ Elitismo</span>
+        <span class="tag">📡 SSE Streaming</span>
+        <span class="tag">⚡ Express API</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main App -->
+  <main class="app-container">
+
+    <!-- Left Panel -->
+    <aside class="left-panel">
+
+      <!-- Parameters -->
+      <section class="card" id="params-card">
+        <h2 class="card-title">
+          <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          Parâmetros do AG
+        </h2>
+        <div class="param-group">
+          <label for="numClients">Clientes <span class="param-value" id="numClientsVal">12</span></label>
+          <input type="range" id="numClients" min="6" max="24" value="12" step="1" />
+        </div>
+        <div class="param-group">
+          <label for="vehicleCapacity">Capacidade <span class="param-value" id="vehicleCapacityVal">50</span></label>
+          <input type="range" id="vehicleCapacity" min="20" max="100" value="50" step="5" />
+        </div>
+        <div class="param-group">
+          <label for="popSize">População <span class="param-value" id="popSizeVal">80</span></label>
+          <input type="range" id="popSize" min="20" max="200" value="80" step="10" />
+        </div>
+        <div class="param-group">
+          <label for="maxGen">Gerações <span class="param-value" id="maxGenVal">150</span></label>
+          <input type="range" id="maxGen" min="50" max="500" value="150" step="50" />
+        </div>
+        <div class="param-group">
+          <label for="mutRate">Taxa de Mutação <span class="param-value" id="mutRateVal">5%</span></label>
+          <input type="range" id="mutRate" min="1" max="30" value="5" step="1" />
+        </div>
+        <div class="param-group">
+          <label for="eliteRate">Elitismo <span class="param-value" id="eliteRateVal">15%</span></label>
+          <input type="range" id="eliteRate" min="5" max="40" value="15" step="5" />
+        </div>
+        <div class="action-buttons">
+          <button class="btn btn-primary" id="btnRun">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            Iniciar Evolução
+          </button>
+          <button class="btn btn-secondary" id="btnReset">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Reiniciar
+          </button>
+        </div>
+      </section>
+
+      <!-- Live Stats -->
+      <section class="card stats-card">
+        <h2 class="card-title">
+          <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Estatísticas em Tempo Real
+        </h2>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-label">Geração</span>
+            <span class="stat-value" id="statGen">—</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Melhor Dist.</span>
+            <span class="stat-value highlight" id="statBest">—</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Dist. Média</span>
+            <span class="stat-value" id="statAvg">—</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Rotas</span>
+            <span class="stat-value" id="statRoutes">—</span>
+          </div>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-label">
+            <span>Progresso</span><span id="progressPct">0%</span>
+          </div>
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" id="progressFill"></div>
+          </div>
+        </div>
+        <div class="status-badge">
+          <span class="status-dot idle" id="statusDot"></span>
+          <span id="statusText">Aguardando início</span>
+        </div>
+        <!-- Server info -->
+        <div class="server-info" id="serverInfo" style="display:none">
+          <div class="server-info-row">
+            <span class="server-label">Job ID</span>
+            <code class="server-val" id="serverJobId">—</code>
+          </div>
+          <div class="server-info-row">
+            <span class="server-label">SSE Stream</span>
+            <code class="server-val" id="serverStream">—</code>
+          </div>
+        </div>
+      </section>
+
+      <!-- How it works -->
+      <section class="card info-card">
+        <h2 class="card-title">
+          <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          Arquitetura
+        </h2>
+        <div class="arch-diagram">
+          <div class="arch-node frontend">
+            <div class="arch-icon">⚡</div>
+            <div class="arch-label">Vite</div>
+            <div class="arch-sub">Frontend</div>
+          </div>
+          <div class="arch-arrow">
+            <span>POST /api/ga/start</span>
+            <svg viewBox="0 0 24 8" fill="none"><path d="M0 4h22M18 1l4 3-4 3" stroke="currentColor" stroke-width="1.5"/></svg>
+            <span>SSE ← eventos</span>
+          </div>
+          <div class="arch-node backend">
+            <div class="arch-icon">🚀</div>
+            <div class="arch-label">Express</div>
+            <div class="arch-sub">GA no servidor</div>
+          </div>
+        </div>
+        <div class="info-steps">
+          <div class="info-step">
+            <div class="step-num">1</div>
+            <div class="step-text"><strong>POST /api/ga/start</strong> — envia parâmetros, recebe <code>jobId</code> e instância do problema.</div>
+          </div>
+          <div class="info-step">
+            <div class="step-num">2</div>
+            <div class="step-text"><strong>SSE Stream</strong> — o servidor transmite cada geração como evento JSON em tempo real.</div>
+          </div>
+          <div class="info-step">
+            <div class="step-num">3</div>
+            <div class="step-text"><strong>PMX + Elitismo</strong> — cruzamento Partially Mapped Crossover preserva rotas válidas sem repetições.</div>
+          </div>
+          <div class="info-step">
+            <div class="step-num">4</div>
+            <div class="step-text"><strong>Canvas API</strong> — frontend renderiza o mapa e o gráfico de aptidão a cada evento recebido.</div>
+          </div>
+        </div>
+      </section>
+    </aside>
+
+    <!-- Right Panel -->
+    <div class="right-panel">
+      <!-- Map -->
+      <section class="card canvas-card">
+        <div class="canvas-header">
+          <h2 class="card-title">
+            <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/></svg>
+            Mapa de Rotas — Melhor Solução
+          </h2>
+          <div class="canvas-legend" id="routeLegend"></div>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="mapCanvas" width="900" height="420"></canvas>
+        </div>
+      </section>
+
+      <!-- Chart -->
+      <section class="card chart-card">
+        <div class="canvas-header">
+          <h2 class="card-title">
+            <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            Evolução da Aptidão por Geração
+          </h2>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="fitnessChart" width="900" height="220"></canvas>
+        </div>
+      </section>
+
+      <!-- Route details -->
+      <section class="card routes-card">
+        <h2 class="card-title">
+          <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Detalhes das Rotas
+        </h2>
+        <div class="routes-list" id="routesList">
+          <p class="placeholder-text">Execute o algoritmo para ver os detalhes das rotas.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <p>
+      Algoritmo Genético Aplicado ao PRVC.
+      &nbsp;|&nbsp; Stack: <strong>Vite · Express · Server-Sent Events</strong>
+    </p>
+  </footer>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
