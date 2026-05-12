@@ -4,11 +4,11 @@
 //  Baseado em: Jadson José Monteiro Oliveira — Unibalsas
 // =============================================================
 
-function dist(a, b) {
+export function dist(a, b) {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }
 
-function shuffle(arr) {
+export function shuffle(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -18,7 +18,7 @@ function shuffle(arr) {
 }
 
 /** Decode chromosome permutation into vehicle routes respecting capacity */
-function decode(chrom, clients, cap) {
+export function decode(chrom, clients, cap) {
   const routes = [];
   let route = [], load = 0;
   for (const idx of chrom) {
@@ -35,7 +35,7 @@ function decode(chrom, clients, cap) {
 }
 
 /** Evaluate fitness of a chromosome */
-function evaluate(chrom, clients, depot, cap) {
+export function evaluate(chrom, clients, depot, cap) {
   const routes = decode(chrom, clients, cap);
   let total = 0;
   for (const r of routes) {
@@ -50,7 +50,7 @@ function evaluate(chrom, clients, depot, cap) {
 }
 
 /** PMX Crossover — Partially Mapped Crossover */
-function pmx(p1, p2) {
+export function pmx(p1, p2) {
   const n = p1.length;
   let a = Math.floor(Math.random() * n);
   let b = Math.floor(Math.random() * n);
@@ -75,7 +75,7 @@ function pmx(p1, p2) {
 }
 
 /** Swap mutation */
-function mutate(chrom, rate) {
+export function mutate(chrom, rate) {
   const c = [...chrom];
   if (Math.random() < rate) {
     const i = Math.floor(Math.random() * c.length);
@@ -86,7 +86,7 @@ function mutate(chrom, rate) {
 }
 
 /** Tournament selection */
-function tournamentSelect(pop, fits, k = 3) {
+export function tournamentSelect(pop, fits, k = 3) {
   let best = Math.floor(Math.random() * pop.length);
   for (let i = 1; i < k; i++) {
     const idx = Math.floor(Math.random() * pop.length);
@@ -108,7 +108,7 @@ export function generateProblem(numClients) {
 }
 
 /** Initialize random population */
-function initPop(size, n) {
+export function initPop(size, n) {
   return Array.from({ length: size }, () =>
     shuffle(Array.from({ length: n }, (_, i) => i))
   );
